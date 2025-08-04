@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECharts Client Example</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .chart-container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .chart {
+            width: 100%;
+            height: 400px;
+        }
+        h2 {
+            margin-top: 0;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>ECharts API Server Examples</h1>
+    
+    <div class="chart-container">
+        <h2>Line Chart</h2>
+        <div id="lineChart" class="chart"></div>
+    </div>
+    
+    <div class="chart-container">
+        <h2>Bar Chart</h2>
+        <div id="barChart" class="chart"></div>
+    </div>
+    
+    <div class="chart-container">
+        <h2>Combined Chart</h2>
+        <div id="combinedChart" class="chart"></div>
+    </div>
+    
+    <div class="chart-container">
+        <h2>Real-time Chart</h2>
+        <div id="realtimeChart" class="chart"></div>
+    </div>
+    
+    <script>
+        // API Base URL
+        const API_BASE = 'http://localhost:3000/api';
+        
+        // Line Chart
+        const lineChart = echarts.init(document.getElementById('lineChart'));
+        
+        fetch(`${API_BASE}/line-chart?days=30&series=3`)
+            .then(res => res.json())
+            .then(data => {
+                const option = {
+                    title: { text: '월별 추이 분석' },
+                    tooltip: { trigger: 'axis' },
+                    legend: { data: data.series.map(s => s.name) },
+                    grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+                    xAxis: { 
+                        type: 'category', 
+                        data: data.categories,
+                        boundaryGap: false
+                    },
+                    yAxis: { type: 'value' },
+                    series: data.series.map(s => ({
+                        name: s.name,
+                        type: 'line',
+                        data: s.data,
+                        smooth: true
+                    }))
+                };
+                lineChart.setOption(option);
+            });
+        
+        // Bar Chart
+        const barChart = echarts.init(document.getElementById('barChart'));
+        
+        fetch(`${API_BASE}/bar-chart?series=3`)
+            .then(res => res.json())
+            .then(data => {
+                const option = {
+                    title: { text: '제품별 판매량' },
+                    tooltip: { 
+                        trigger: 'axis',
+                        axisPointer: { type: 'shadow' }
+                    },
+                    legend: { data: data.series.map(s => s.name) },
+                    grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+                    xAxis: { type: 'category', data: data.categories },
+                    yAxis: { type: 'value' },
+                    series: data.series.map(s => ({
+                        name: s.name,
+                        type: 'bar',
+                        data: s.data,
+                        emphasis: {
+                            focus: 'series'
+                        }
+                    }))
+                };
+                barChart.setOption(option);
+            });
+        
+        // Combined Chart
+        const combinedChart = echarts.init(document.getElementById('combinedChart'));
+        
+        fetch(`${API_BASE}/combined-chart?months=12`)
+            .then(res => res.json())
+            .then(data => {
+                const option = {
+                    title: { text: '매출 및 성장률 분석' },
+                    tooltip: { trigger: 'axis' },
+                    legend: { data: data.series.map(s => s.name) },
+                    grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+                    xAxis: { type: 'category', data: data.categories },
+                    yAxis: [
+                        { type: 'value', name: '금액 ($)' },
+                        { type: 'value', name: '성장률 (%)', position: 'right' }
+                    ],
+                    series: data.series.map(s => ({
+                        ...s,
+                        ...(s.type === 'line' && { smooth: true })
+                    }))
+                };
+                combinedChart.setOption(option);
+            });
+        
+        // Real-time Chart
+        const realtimeChart = echarts.init(document.getElementById('realtimeChart'));
+        const realtimeData = [];
+        const realtimeCategories = [];
+        
+        const realtimeOption = {
+            title: { text: '실시간 모니터링' },
+            tooltip: { trigger: 'axis' },
+            legend: { data: ['CPU', 'Memory'] },
+            grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+            xAxis: { 
+                type: 'category', 
+                data: realtimeCategories,
+                boundaryGap: false
+            },
+            yAxis: { 
+                type: 'value',
+                max: 100,
+                axisLabel: { formatter: '{value}%' }
+            },
+            series: [
+                {
+                    name: 'CPU',
+                    type: 'line',
+                    data: [],
+                    smooth: true,
+                    areaStyle: { opacity: 0.3 }
+                },
+                {
+                    name: 'Memory',
+                    type: 'line',
+                    data: [],
+                    smooth: true,
+                    areaStyle: { opacity: 0.3 }
+                }
+            ]
+        };
+        
+        realtimeChart.setOption(realtimeOption);
+        
+        // Update real-time chart every second
+        setInterval(() => {
+            fetch(`${API_BASE}/realtime`)
+                .then(res => res.json())
+                .then(data => {
+                    const time = new Date(data.timestamp).toLocaleTimeString();
+                    
+                    if (realtimeCategories.length > 20) {
+                        realtimeCategories.shift();
+                        realtimeOption.series[0].data.shift();
+                        realtimeOption.series[1].data.shift();
+                    }
+                    
+                    realtimeCategories.push(time);
+                    realtimeOption.series[0].data.push(data.metrics.cpu);
+                    realtimeOption.series[1].data.push(data.metrics.memory);
+                    
+                    realtimeChart.setOption(realtimeOption);
+                });
+        }, 1000);
+        
+        // Responsive
+        window.addEventListener('resize', () => {
+            lineChart.resize();
+            barChart.resize();
+            combinedChart.resize();
+            realtimeChart.resize();
+        });
+    </script>
+</body>
+</html> 
