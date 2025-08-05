@@ -4,13 +4,17 @@ const router = express.Router();
 const lineChartRoutes = require('./lineChart');
 const barChartRoutes = require('./barChart');
 const combinedChartRoutes = require('./combinedChart');
+const pieChartRoutes = require('./pieChart');
 const realtimeRoutes = require('./realtime');
+const tabulatorTableRoutes = require('./tabulatorTable');
 
 // Mount route handlers
 router.use('/line-chart', lineChartRoutes);
 router.use('/bar-chart', barChartRoutes);
 router.use('/combined-chart', combinedChartRoutes);
+router.use('/pie-chart', pieChartRoutes);
 router.use('/realtime', realtimeRoutes);
+router.use('/tabulator-table', tabulatorTableRoutes);
 
 // Custom chart endpoint
 router.post('/custom-chart', (req, res) => {

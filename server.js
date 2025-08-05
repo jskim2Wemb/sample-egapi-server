@@ -49,7 +49,16 @@ app.listen(PORT, () => {
   console.log('  GET  /api/line-chart');
   console.log('  GET  /api/bar-chart');
   console.log('  GET  /api/combined-chart');
+  console.log('  GET  /api/pie-chart');
+  console.log('  GET  /api/pie-chart/donut');
+  console.log('  GET  /api/pie-chart/category/:type');
+  console.log('  GET  /api/pie-chart/sample');
+  console.log('  POST /api/pie-chart/custom');
   console.log('  GET  /api/realtime');
   console.log('  POST /api/custom-chart');
+  console.log('  GET  /api/tabulator-table');
+  console.log('  GET  /api/tabulator-table/sample');
+  console.log('  GET  /api/tabulator-table/large');
+  console.log('  POST /api/tabulator-table/custom');
   console.log('\nExample client: http://localhost:' + PORT + '/client/example.html');
 });
